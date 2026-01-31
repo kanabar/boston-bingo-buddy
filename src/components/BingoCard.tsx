@@ -1,5 +1,5 @@
 import { BingoCell } from "./BingoCell";
-import { BingoPrompt } from "@/data/bostonBingoPrompts";
+import { BingoPrompt } from "@/data/bingoThemes";
 
 interface BingoCardProps {
   grid: (BingoPrompt | null)[];

@@ -2,6 +2,13 @@ import { BingoCard } from "./BingoCard";
 import { Confetti } from "./Confetti";
 import { useBingoGame } from "@/hooks/useBingoGame";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Shuffle, RotateCcw, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,21 +21,41 @@ export const BingoGame = () => {
     toggleCell,
     resetGame,
     markedCount,
+    currentTheme,
+    themes,
+    changeTheme,
   } = useBingoGame();
 
   return (
     <div className="min-h-screen bg-background py-6 px-4 sm:py-10">
       <Confetti isActive={hasWon} />
-      
+
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <header className="text-center mb-6 sm:mb-10">
           <h1 className="font-display text-4xl sm:text-6xl font-bold text-foreground mb-2 tracking-tight">
-            Boston <span className="text-primary">BINGO</span>
+            {currentTheme.emoji} {currentTheme.name} <span className="text-primary">BINGO</span>
           </h1>
-          <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto">
-            Find someone who matches each square and get them to sign it. First to complete a row, column, or diagonal wins!
+          <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto mb-4">
+            {currentTheme.description}. Find someone who matches each square!
           </p>
+
+          {/* Theme Selector */}
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-sm text-muted-foreground">Theme:</span>
+            <Select value={currentTheme.id} onValueChange={changeTheme}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {themes.map((theme) => (
+                  <SelectItem key={theme.id} value={theme.id}>
+                    {theme.emoji} {theme.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </header>
 
         {/* Win Banner */}

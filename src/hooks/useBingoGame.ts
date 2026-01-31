@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { bostonBingoPrompts, BingoPrompt } from "@/data/bostonBingoPrompts";
+import { BingoPrompt, BingoTheme, bingoThemes, getThemeById } from "@/data/bingoThemes";
 
 const GRID_SIZE = 25;
 const FREE_SPACE_INDEX = 12;
@@ -32,13 +32,13 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-function generateGrid(): (BingoPrompt | null)[] {
-  const shuffled = shuffleArray(bostonBingoPrompts);
+function generateGrid(theme: BingoTheme): (BingoPrompt | null)[] {
+  const shuffled = shuffleArray(theme.prompts);
   const selected = shuffled.slice(0, GRID_SIZE - 1); // -1 for free space
-  
+
   const grid: (BingoPrompt | null)[] = [];
   let promptIndex = 0;
-  
+
   for (let i = 0; i < GRID_SIZE; i++) {
     if (i === FREE_SPACE_INDEX) {
       grid.push(null); // Free space
@@ -47,28 +47,31 @@ function generateGrid(): (BingoPrompt | null)[] {
       promptIndex++;
     }
   }
-  
+
   return grid;
 }
 
 export function useBingoGame() {
-  const [grid, setGrid] = useState<(BingoPrompt | null)[]>(() => generateGrid());
+  const [currentThemeId, setCurrentThemeId] = useState<string>("boston");
+  const currentTheme = getThemeById(currentThemeId);
+
+  const [grid, setGrid] = useState<(BingoPrompt | null)[]>(() => generateGrid(currentTheme));
   const [markedCells, setMarkedCells] = useState<Set<number>>(new Set([FREE_SPACE_INDEX]));
   const [hasWon, setHasWon] = useState(false);
 
   const winningCells = useMemo(() => {
     const winCells = new Set<number>();
-    
+
     for (const pattern of WINNING_PATTERNS) {
-      const isWinning = pattern.every(index => 
+      const isWinning = pattern.every(index =>
         markedCells.has(index) || index === FREE_SPACE_INDEX
       );
-      
+
       if (isWinning) {
         pattern.forEach(index => winCells.add(index));
       }
     }
-    
+
     return winCells;
   }, [markedCells]);
 
@@ -80,7 +83,7 @@ export function useBingoGame() {
 
   const toggleCell = useCallback((index: number) => {
     if (index === FREE_SPACE_INDEX) return;
-    
+
     setMarkedCells(prev => {
       const newMarked = new Set(prev);
       if (newMarked.has(index)) {
@@ -88,18 +91,26 @@ export function useBingoGame() {
       } else {
         newMarked.add(index);
       }
-      
+
       const won = checkForWin(newMarked);
       if (won && !hasWon) {
         setHasWon(true);
       }
-      
+
       return newMarked;
     });
   }, [hasWon, checkForWin]);
 
   const resetGame = useCallback(() => {
-    setGrid(generateGrid());
+    setGrid(generateGrid(currentTheme));
+    setMarkedCells(new Set([FREE_SPACE_INDEX]));
+    setHasWon(false);
+  }, [currentTheme]);
+
+  const changeTheme = useCallback((themeId: string) => {
+    const theme = getThemeById(themeId);
+    setCurrentThemeId(themeId);
+    setGrid(generateGrid(theme));
     setMarkedCells(new Set([FREE_SPACE_INDEX]));
     setHasWon(false);
   }, []);
@@ -114,5 +125,8 @@ export function useBingoGame() {
     toggleCell,
     resetGame,
     markedCount,
+    currentTheme,
+    themes: bingoThemes,
+    changeTheme,
   };
 }

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { BingoPrompt, FREE_SPACE_TEXT } from "@/data/bostonBingoPrompts";
+import { BingoPrompt, FREE_SPACE_TEXT } from "@/data/bingoThemes";
 
 interface BingoCellProps {
   prompt: BingoPrompt | null;
